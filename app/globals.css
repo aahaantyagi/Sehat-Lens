@@ -1,0 +1,339 @@
+@import "tailwindcss";
+
+@custom-variant night (&:where(.night, .night *));
+
+@theme {
+  --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+/* ============ ATMOSPHERIC SKY GLASS — design tokens ============ */
+
+:root,
+.day {
+  color-scheme: light;
+
+  --atmo-1: radial-gradient(ellipse 120% 85% at 50% -20%, #38bdf8 0%, transparent 55%);
+  --atmo-2: radial-gradient(ellipse 90% 60% at 8% 18%, #7dd3fc 0%, transparent 55%);
+  --atmo-3: radial-gradient(ellipse 100% 70% at 96% 6%, #a5b4fc 0%, transparent 52%);
+  --atmo-4: radial-gradient(ellipse 110% 75% at 50% 115%, #bae6fd 0%, transparent 60%);
+  --atmo-base: linear-gradient(180deg, #dbe9f8 0%, #e0f2fe 48%, #e8f4fd 100%);
+
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-bg-strong: rgba(255, 255, 255, 0.62);
+  --glass-bg-soft: rgba(255, 255, 255, 0.28);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --glass-shadow: 0 8px 32px 0 rgba(14, 116, 144, 0.08);
+
+  --text-strong: #0f172a;
+  --text-primary: #1e293b;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --hairline: rgba(15, 23, 42, 0.08);
+
+  --optimal: #059669;
+  --optimal-bg: rgba(5, 150, 105, 0.1);
+  --borderline: #b45309;
+  --borderline-bg: rgba(180, 83, 9, 0.1);
+  --critical: #be123c;
+  --critical-bg: rgba(190, 18, 60, 0.09);
+
+  --accent: #0369a1;
+  --accent-bg: rgba(3, 105, 161, 0.09);
+  --accent-border: rgba(3, 105, 161, 0.28);
+
+  --chart-grid: rgba(15, 23, 42, 0.07);
+  --chart-axis: #64748b;
+
+  /* Legacy aliases — token names from earlier iterations, mapped to the sky system */
+  --color-accent: var(--accent);
+  --color-normal: var(--optimal);
+  --color-borderline: var(--borderline);
+  --color-critical: var(--critical);
+  --color-warning: #b45309;
+  --color-caution: var(--borderline);
+  --color-danger: var(--critical);
+}
+
+.night {
+  color-scheme: dark;
+
+  --atmo-1: radial-gradient(ellipse 120% 85% at 50% -20%, #1e293b 0%, transparent 58%);
+  --atmo-2: radial-gradient(ellipse 80% 55% at 6% 14%, rgba(49, 46, 129, 0.5) 0%, transparent 55%);
+  --atmo-3: radial-gradient(ellipse 85% 55% at 98% 8%, rgba(30, 58, 138, 0.38) 0%, transparent 55%);
+  --atmo-4: radial-gradient(ellipse 110% 70% at 50% 118%, rgba(15, 23, 42, 0.9) 0%, transparent 62%);
+  --atmo-base: linear-gradient(180deg, #0f172a 0%, #0b1120 52%, #030712 100%);
+
+  --glass-bg: rgba(15, 23, 42, 0.65);
+  --glass-bg-strong: rgba(15, 23, 42, 0.82);
+  --glass-bg-soft: rgba(15, 23, 42, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+  --text-strong: #f8fafc;
+  --text-primary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --hairline: rgba(255, 255, 255, 0.08);
+
+  --optimal: #34d399;
+  --optimal-bg: rgba(52, 211, 153, 0.12);
+  --borderline: #fbbf24;
+  --borderline-bg: rgba(251, 191, 36, 0.12);
+  --critical: #fb7185;
+  --critical-bg: rgba(251, 113, 133, 0.12);
+
+  --accent: #7dd3fc;
+  --accent-bg: rgba(125, 211, 252, 0.1);
+  --accent-border: rgba(125, 211, 252, 0.3);
+
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --chart-axis: #94a3b8;
+
+  /* Legacy aliases (night values) */
+  --color-accent: var(--accent);
+  --color-normal: var(--optimal);
+  --color-borderline: var(--borderline);
+  --color-critical: var(--critical);
+  --color-warning: #fb923c;
+  --color-caution: var(--borderline);
+  --color-danger: var(--critical);
+}
+
+/* Legacy dot utilities */
+.dot-normal { background: var(--optimal); }
+.dot-borderline { background: var(--borderline); }
+.dot-critical { background: var(--critical); }
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  font-feature-settings: "ss01" on, "cv01" on;
+}
+
+.atmosphere {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Fixed sky — the blue hue stays put while content scrolls over it,
+   so glass panels keep something atmospheric to blur at every scroll depth. */
+.atmosphere::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    var(--atmo-1),
+    var(--atmo-2),
+    var(--atmo-3),
+    var(--atmo-4),
+    var(--atmo-base);
+  transition: background 0.6s ease;
+  pointer-events: none;
+}
+
+/* ============ MACHINED GLASS PANELS ============ */
+
+.glass {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1.5px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 18px;
+}
+
+.night .glass {
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.glass-strong {
+  position: relative;
+  background: var(--glass-bg-strong);
+  border: 1.5px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 18px;
+}
+
+.night .glass-strong {
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+.glass-soft {
+  position: relative;
+  background: var(--glass-bg-soft);
+  border: 1.5px solid var(--glass-border);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border-radius: 16px;
+}
+
+.glass-hover {
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.glass-hover:hover {
+  border-color: var(--accent-border);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px 0 rgba(2, 90, 130, 0.12);
+}
+
+.night .glass-hover:hover {
+  box-shadow: 0 14px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+.hairline { border-color: var(--hairline); }
+.text-strong { color: var(--text-strong); }
+.text-primary { color: var(--text-primary); }
+.text-muted { color: var(--text-muted); }
+.text-faint { color: var(--text-faint); }
+
+/* ============ SWISS TYPE UTILITIES ============ */
+
+.micro {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+/* ============ STATUS SYSTEM ============ */
+
+.st-optimal { color: var(--optimal); }
+.st-borderline { color: var(--borderline); }
+.st-critical { color: var(--critical); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+.badge-optimal { background: var(--optimal-bg); color: var(--optimal); border-color: color-mix(in srgb, var(--optimal) 30%, transparent); }
+.badge-borderline { background: var(--borderline-bg); color: var(--borderline); border-color: color-mix(in srgb, var(--borderline) 30%, transparent); }
+.badge-critical { background: var(--critical-bg); color: var(--critical); border-color: color-mix(in srgb, var(--critical) 32%, transparent); }
+.badge-accent { background: var(--accent-bg); color: var(--accent); border-color: var(--accent-border); }
+.badge-neutral { background: var(--glass-bg-soft); color: var(--text-muted); border-color: var(--hairline); }
+
+/* ============ CONTROLS ============ */
+
+.pill {
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  padding: 5px 13px;
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: transparent;
+}
+
+.pill:hover { color: var(--text-strong); border-color: var(--accent-border); }
+
+.pill-active {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.btn-primary {
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-primary:hover { filter: brightness(1.06); transform: translateY(-1px); }
+
+/* ============ ANIMATION ============ */
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.rise { animation: rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+
+@keyframes scanline {
+  0% { top: -10%; }
+  100% { top: 110%; }
+}
+
+.scanline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scanline 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.pulse-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
+
+/* Expandable telemetry drawer */
+.drawer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.drawer.open { grid-template-rows: 1fr; }
+
+.drawer-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ============ MAP TILES ============ */
+
+.map-tiles-day {
+  filter: saturate(0.75) contrast(0.95) brightness(1.02);
+}
+
+.map-tiles-night {
+  filter: invert(1) hue-rotate(185deg) brightness(0.9) contrast(0.88) saturate(0.5);
+}
+
+/* ============ PRINT: BRIEF ============ */
+
+@media print {
+  .atmosphere { background: white !important; }
+  body { color: black !important; }
+  .no-print { display: none !important; }
+  .print-page {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+  }
+  @page { size: A4; margin: 12mm; }
+}
